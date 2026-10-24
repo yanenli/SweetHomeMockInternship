@@ -918,8 +918,11 @@ public class FurnitureTable extends JTable implements View, Printable {
           case DEPTH :
             writer.write(sizeFormat.format(copiedPiece.getDepth()));
             break;
-          case HEIGHT : 
+          case HEIGHT :
             writer.write(sizeFormat.format(copiedPiece.getHeight()));
+            break;
+          case VOLUME:
+            writer.write(sizeFormat.format(copiedPiece.getVolume()));
             break;
           case X : 
             writer.write(sizeFormat.format(copiedPiece.getX()));
@@ -1130,6 +1133,8 @@ public class FurnitureTable extends JTable implements View, Printable {
           return preferences.getLocalizedString(FurnitureTable.class, "depthColumn");
         case HEIGHT : 
           return preferences.getLocalizedString(FurnitureTable.class, "heightColumn");
+        case VOLUME:
+          return preferences.getLocalizedString(FurnitureTable.class, "volumeColumn");
         case X : 
           return preferences.getLocalizedString(FurnitureTable.class, "xColumn");
         case Y :
@@ -1173,7 +1178,8 @@ public class FurnitureTable extends JTable implements View, Printable {
           return 120; 
         case WIDTH :
         case DEPTH :
-        case HEIGHT : 
+        case HEIGHT :
+        case VOLUME:
         case X : 
         case Y :
         case ELEVATION : 
@@ -1215,6 +1221,8 @@ public class FurnitureTable extends JTable implements View, Printable {
           return getSizeRenderer(HomePieceOfFurniture.SortableProperty.DEPTH, preferences);
         case HEIGHT : 
           return getSizeRenderer(HomePieceOfFurniture.SortableProperty.HEIGHT, preferences);
+        case VOLUME:
+          return getVolumeRenderer(preferences);
         case X : 
           return getSizeRenderer(HomePieceOfFurniture.SortableProperty.X, preferences);
         case Y :
@@ -1374,6 +1382,26 @@ public class FurnitureTable extends JTable implements View, Printable {
         default :
           throw new IllegalArgumentException(property + " column not a size column");
       }
+    }
+
+    private TableCellRenderer getVolumeRenderer(final UserPreferences preferences) {
+      return new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
+
+          if (value != null) {
+            float volume = ((HomePieceOfFurniture)value).getVolume();
+            value = preferences.getLengthUnit().getFormat().format(volume);
+          }
+
+          setHorizontalAlignment(JLabel.RIGHT);
+
+          return super.getTableCellRendererComponent(
+                  table, value, isSelected, hasFocus, row, column);
+        }
+      };
     }
 
     /**
