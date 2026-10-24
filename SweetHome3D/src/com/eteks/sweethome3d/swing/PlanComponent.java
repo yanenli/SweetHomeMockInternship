@@ -2008,7 +2008,20 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
    * that makes it fill <code>pageFormat</code> imageable size if this attribute is <code>null</code>.
    */
   public int print(Graphics g, PageFormat pageFormat, int pageIndex) {
-    List<Selectable> printedItems = getPaintedItems(); 
+    Level originalLevel = this.home.getSelectedLevel();
+    List<Level> viewableLevels = new ArrayList<Level>();
+    for (Level level : this.home.getLevels()) {
+      if (level.isViewable()) {
+        viewableLevels.add(level);
+      }
+    }
+    if (pageIndex < 0 || pageIndex >= viewableLevels.size()) {
+      return NO_SUCH_PAGE;
+    }
+    Level levelToPrint = viewableLevels.get(pageIndex);
+    this.home.setSelectedLevel(levelToPrint);
+    try {
+      List<Selectable> printedItems = getPaintedItems();
     Rectangle2D printedItemBounds = getItemsBounds(g, printedItems);
     if (printedItemBounds != null) {
       double imageableX = pageFormat.getImageableX();
@@ -2023,9 +2036,6 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       if (this.home.getPrint() == null || this.home.getPrint().getPlanScale() == null) {
         // Compute a scale that ensures the plan will fill the component if plan scale is null
         printScale = getPrintPreferredScale(g, pageFormat) * LengthUnit.centimeterToInch(72);
-        if (pageIndex > 0) {
-          return NO_SUCH_PAGE;
-        }
         pagesPerRow = 1;
         pagesPerColumn = 1;
         rowIndex   = 0;
@@ -2041,11 +2051,8 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         if (printedItemBounds.getHeight() * printScale != imageableHeight) {
           pagesPerColumn++;
         }
-        if (pageIndex >= pagesPerRow * pagesPerColumn) {
-          return NO_SUCH_PAGE;
-        }
-        rowIndex = pageIndex / pagesPerRow;
-        columnIndex = pageIndex - rowIndex * pagesPerRow;
+        rowIndex = 0;
+        columnIndex = 0;
       }
           
       Graphics2D g2D = (Graphics2D)g.create();
@@ -2072,6 +2079,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       return PAGE_EXISTS;
     } else {
       return NO_SUCH_PAGE;
+    }
+    } finally {
+      this.home.setSelectedLevel(originalLevel);
     }
   }
   
